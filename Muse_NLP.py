@@ -1,5 +1,6 @@
 
 # let's test
+import numpy as np
 
 
 def ngrams_create(inp_str, n=3):
@@ -7,7 +8,7 @@ def ngrams_create(inp_str, n=3):
         add_bound.extend(inp_str)
         add_bound.append("<\s>")
         ngrams = np.asarray([tuple(add_bound[i:i+n]) for i in xrange(len(add_bound)-n+1)])
-    return ngrams
+        return ngrams
 
 
 def corpus_parser(corpus_file, comment_str=";;;"):
@@ -48,7 +49,7 @@ def ngrams_counter(input_array, n=3):
             # sanity check
             assert len(ngram) == n, "Something went wrong with the size"
 
-             for i in xrange(2, n+1):                                     #Count NE-tag 2-grams..n-grams
+            for i in xrange(2, n+1):                                     #Count NE-tag 2-grams..n-grams
                 ngram_counts[i-1][ngram[-i:]] += 1
 
 
