@@ -1,0 +1,9 @@
+[?1034h> /Users/Graz/Documents/Muse_Test/Muse_Test/AnotherTest.py(3)<module>()
+-> __author__="Daniel Bauer <bauer@cs.columbia.edu>"
+(Pdb) (Pdb) (Pdb) (Pdb) > /Users/Graz/Documents/Muse_Test/Muse_Test/AnotherTest.py(103)train()
+-> for i in xrange(2, self.n+1): #Count NE-tag 2-grams..n-grams
+(Pdb) Uncaught exception. Entering post mortem debugging
+Running 'cont' or 'step' will restart the program
+> /Users/Graz/anaconda/lib/python2.7/cmd.py(130)cmdloop()
+-> line = raw_input(self.prompt)
+(Pdb) 

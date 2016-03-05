@@ -1,0 +1,11 @@
+
+;;; this is a comment you should shkip
+
+A  AH0
+A(1)  EY1
+A'S  EY1 Z
+A.  EY1
+A.'S  EY1 Z
+A.S  EY1 Z
+A42128  EY1 F AO1 R T UW1 W AH1 N T UW1 EY1 T
+AA  EY2 EY1

@@ -6,6 +6,7 @@ __date__ ="$Sep 12, 2011"
 import sys
 from collections import defaultdict
 import math
+import pdb
 
 """
 Count n-gram frequencies in a CoNLL NER data file and write counts to
@@ -98,6 +99,7 @@ class Hmm(object):
             assert len(ngram) == self.n, "ngram in stream is %i, expected %i" % (len(ngram, self.n))
 
             tagsonly = tuple([ne_tag for word, ne_tag in ngram]) #retrieve only the tags
+            pdb.set_trace()
             for i in xrange(2, self.n+1): #Count NE-tag 2-grams..n-grams
                 self.ngram_counts[i-1][tagsonly[-i:]] += 1
 
