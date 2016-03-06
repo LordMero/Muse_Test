@@ -186,7 +186,7 @@ def query_system(tquery_str,ngram_counts,top,n):
 
     # allocate arrays
     guess_probs = np.array([(query_str.replace(wcard,mono)[0], 0) for mono in monograms.keys()],dtype=[('guessed_word','S50'),('guessed_probs','f4')])
-    out         = np.empty([1,top],dtype=str)
+    out         = np.empty((1,top),dtype='S2')
 
     # compute probabilities
     for i in xrange(0,len(guess_probs['guessed_word'])):
@@ -200,10 +200,10 @@ def query_system(tquery_str,ngram_counts,top,n):
         guess_probs = np.sort(guess_probs,order='guessed_probs')
 
         for i  in xrange(1,min(guess_probs.size,top+1)):
-            print guess_probs[-i]
-            out[0,i-1] = guess_probs[-i][0]
+            print guess_probs['guessed_word'][-1]
+            #out[0,i-1] = guess_probs['guessed_word'][-i]
 
-        return out
+        #return out
     else:
         return None
 
@@ -315,11 +315,8 @@ def main(argv):
 
     count_array = ngrams_counter(input_array,i_parser.n)
 
-    bpoint()
 
-    out = query_system(i_parser.input_str,count_array,i_parser.top,i_parser.n)
-
-    print  out
+    query_system(i_parser.input_str,count_array,i_parser.top,i_parser.n)
 
 
 if __name__ == "__main__":
