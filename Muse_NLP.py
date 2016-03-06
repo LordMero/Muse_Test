@@ -200,7 +200,7 @@ def query_system(tquery_str,ngram_counts,top,n):
         guess_probs = np.sort(guess_probs,order='guessed_probs')
 
         for i  in xrange(1,min(guess_probs.size,top+1)):
-            print guess_probs['guessed_word'][-1]
+            print guess_probs['guessed_word'][-i]
             #out[0,i-1] = guess_probs['guessed_word'][-i]
 
         #return out
