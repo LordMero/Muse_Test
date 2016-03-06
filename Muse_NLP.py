@@ -55,9 +55,8 @@ def corpus_parser(corpus_file, comment_str,sent_splitter, dic_flag):
                 bpoint
             else:
                 # if I have a dictionary style training file I don't want other symbols in my training sample.
-                fool    = line.lower().split(" ",1)
-                fields  = list(fool[0])
-
+                fool    = line.lower().split(" ")
+                fields  = list(fool[2])
             # building the list to be converted in np array
             out.append(fields)
             # move to the next line
@@ -116,10 +115,9 @@ def estimate_probs(tinput_str, ngram_counts, n):
     # this function estimates the ngrams conditional probabilities approximated with frequencies contained in ngram_counts
 
     # make sting comparable and put into a list as ngrams_create is expecting that
-    if tinput_str.index(" "):
+    if len(tinput_str.split())>1:
         # need to preserve spaces
         input_str  = [eol+" " for eol in tinput_str.split(" ") if eol !=""]
-
     else:
         input_str = list(tinput_str)
     # first get the number of unique letters or word in corpus
@@ -199,13 +197,16 @@ def query_system(tquery_str,ngram_counts,top,n):
         # sort for the most likely
         guess_probs = np.sort(guess_probs,order='guessed_probs')
 
-        for i  in xrange(1,min(guess_probs.size,top+1)):
-            print guess_probs['guessed_word'][-i]
+        for i  in xrange(1,top+1):
+            try:
+                print guess_probs['guessed_word'][-i]
+            except:
+                print "I ran out of options"
             #out[0,i-1] = guess_probs['guessed_word'][-i]
 
         #return out
     else:
-        return None
+        print "Sorry I am stil learning."
 
 
 
