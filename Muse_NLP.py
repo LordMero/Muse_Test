@@ -1,12 +1,15 @@
 
 import pdb
 
-# let's test
-from collections import defaultdict
+# import minimum modules
 import numpy as np
 import sys
 import time
+import getopt
+
+# import functions and data structs
 from math import log, exp
+from collections import defaultdict
 
 
 def ngrams_create(inp_str, n=3):
@@ -158,26 +161,67 @@ def query_system(tquery_str,ngram_counts,top,n=3):
     guess_probs = guess_probs[guess_probs['guessed_probs']>0]
 
     if guess_probs.size:
-        pdb.set_trace()
-    # sort for the most likely
-        np.take(guess_probs, -guess_probs.argsort(order='guessed_probs'), out=guess_probs)
-        return guess_probs
+        # sort for the most likely
+        guess_probs = np.sort(guess_probs,order='guessed_probs')
+
+        for i  in xrange(1,top+1):
+            return guess_probs[-i]
     else:
         return None
 
 
-def main():
-    input_array = (corpus_parser(open('cmudict-0.7b.txt','r')))
+def main(argv):
+
+    main_inputs = parse_options(argv)
+
+    if len(main_inputs[0]) == 0:
+        input_ws = raw_input("Please insert word to predict: ")
+
+    pdb.set_trace()
+
+    input_array = (corpus_parser(open(main_inputs[2],'r')))
 
     count_array = ngrams_counter(input_array[:,0])
 
-    out = query_system('Hel?o',count_array,1)
+    out = query_system(input_ws,count_array,main_inputs[1])
 
-    return out
+    print  out
+
+def usage():
+    print 'how to use'
+
+def parse_options(argv):
+    try:
+        opts, args = getopt.getopt(argv,"hi:t:f:n:",["input=","top=","file=","ngrams="])
+    except:
+        usage()
+        sys.exit(2)
+
+    if len(opts) != 0:
+        for opt, arg in opts:
+            if opt == '-h':
+                usage()
+                sys.exit()
+            elif opt in ("-i", "--input"):
+                 input_ws = arg
+            elif opt in ("-t", "--top"):
+                 top = arg
+            elif opt in ("-f","--file"):
+                input_file = arg
+            elif opt in ("-n","--ngrams"):
+                n = arg
+    else:
+        input_ws = ""
+        top = 1
+        input_file = 'cmudict-0.7b.txt'
+        n = 3
+
+    # if input_file is not provided use the default one. It's assumed to be in the same directory where the script is
+    return input_ws,top,input_file,n
 
 
-
-
+if __name__ == "__main__":
+    main(sys.argv[1:])
 
 
 
