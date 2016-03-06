@@ -1,5 +1,5 @@
 
-import ipdb
+from pdb import set_trace as bpoint
 
 # ======================================================================
 #                        import modules
@@ -7,6 +7,7 @@ import ipdb
 import numpy as np
 import sys
 import getopt
+import string
 
 # import functions and data structs
 from math import log, exp
@@ -23,19 +24,6 @@ from collections import defaultdict
 #                        Define Main Functions
 # ======================================================================
 
-def ngrams_create(inp_str, n):
-    # this function create ngrams for each string  passed in inp_str
-
-        # we want to enhance the strin with start and stop char
-
-        inp_str_enh = (n-1) * ["*"]
-        inp_str_enh.extend([items for items in inp_str])
-        inp_str_enh.append("#")
-
-        ngrams = ([tuple(inp_str_enh[i:i+n]) for i in xrange(len(inp_str_enh)-n+1)])
-        # return np array
-        return np.asarray(ngrams)
-
 
 def corpus_parser(corpus_file, comment_str,sent_splitter, dic_flag):
 
@@ -45,6 +33,10 @@ def corpus_parser(corpus_file, comment_str,sent_splitter, dic_flag):
 
     # define lenght of comments char
     com_char = len(comment_str)
+    # rem punctuation
+    exclude = set(string.punctuation)
+    exclude.remove(".")
+
     # inizialize output
     out = []
     # read corpus line by line
@@ -55,10 +47,12 @@ def corpus_parser(corpus_file, comment_str,sent_splitter, dic_flag):
         if (line[0:com_char] !=comment_str) and line:
 
             if  dic_flag is None:
+                line   = ''.join(ch for ch in line if ch not in exclude)
+
                 # if I have text type trayining file
                 fields = line.lower().split(sent_splitter)[0]
                 fields = [eol+" " for eol in fields.split(" ") if eol !=""]
-
+                bpoint
             else:
                 # if I have a dictionary style training file I don't want other symbols in my training sample.
                 fool    = line.lower().split(" ",1)
@@ -73,6 +67,22 @@ def corpus_parser(corpus_file, comment_str,sent_splitter, dic_flag):
             # return np array
 
     return np.asarray(out)
+
+
+def ngrams_create(inp_str, n):
+    # this function create ngrams for each string  passed in inp_str
+
+        # we want to enhance the strin with start and stop char
+
+        inp_str_enh = (n-1) * ["*"]
+        inp_str_enh.extend([items for items in inp_str])
+        inp_str_enh.append("#")
+
+        ngrams = ([tuple(inp_str_enh[i:i+n]) for i in xrange(len(inp_str_enh)-n+1)])
+        # return np array
+        return np.asarray(ngrams)
+
+
 
 
 def ngrams_counter(input_array, n):
@@ -106,11 +116,12 @@ def estimate_probs(tinput_str, ngram_counts, n):
     # this function estimates the ngrams conditional probabilities approximated with frequencies contained in ngram_counts
 
     # make sting comparable and put into a list as ngrams_create is expecting that
+    if tinput_str.index(" "):
+        # need to preserve spaces
+        input_str  = [eol+" " for eol in tinput_str.split(" ") if eol !=""]
 
-    tinput_str = tinput_str.lower()
-    print tinput_str
-    # need to preserve spaces
-    input_str  = [eol+" " for eol in tinput_str.split(" ") if eol !=""]
+    else:
+        input_str = list(tinput_str)
     # first get the number of unique letters or word in corpus
     tot_unique = sum(ngram_counts[0].values())
     # this function is expecting a list with n default dictionaries
@@ -133,18 +144,14 @@ def estimate_probs(tinput_str, ngram_counts, n):
             if ngram[n-2] == '*':
                 num = ngram_counts[0][''.join(ngram[-1])]
                 den = tot_unique
-
             else:
                 num = ngram_counts[n-1][''.join(ngram[:])]
                 den = ngram_counts[n-2][''.join(ngram[-n:-1])]
-                ipdb.set_trace()
-                print num, den
-
             # store probabilities in log format
             cond_prob['logprob'][i] = log(float(num)/den)
 
         except:
-            cond_prob['logprob'][i] = log(10**-20)
+            cond_prob['logprob'][i] = log(10**-60)
 
         i += 1
 
@@ -164,9 +171,9 @@ def query_system(tquery_str,ngram_counts,top,n):
     # get index of missing ws
     try:
         inx = query_str.rindex('*')[0]
+        inx = xrange(inx-1,inx)
         wcard = '?*'
-    except ValueError:
-        print "Wrong wildcard looking for the alternative"
+    except:
         try:
             inx = query_str.rindex('?')[0]
             wcard = '?'
@@ -186,16 +193,17 @@ def query_system(tquery_str,ngram_counts,top,n):
         guess_probs['guessed_probs'][i] = estimate_probs(guess_probs['guessed_word'][i],ngram_counts,n)[1]
 
     # hold on to positive probabilities
-    guess_probs = guess_probs[guess_probs['guessed_probs']>10**-10]
+    guess_probs = guess_probs[guess_probs['guessed_probs']>0]
 
     if guess_probs.size:
         # sort for the most likely
         guess_probs = np.sort(guess_probs,order='guessed_probs')
 
-        for i  in xrange(1,top+1):
+        for i  in xrange(1,min(guess_probs.size,top+1)):
             print guess_probs[-i]
-            #out[0,i-1] = guess_probs[-i][0][inx]
-        #return out
+            out[0,i-1] = guess_probs[-i][0]
+
+        return out
     else:
         return None
 
@@ -211,7 +219,7 @@ def query_system(tquery_str,ngram_counts,top,n):
 
 def usage():
     print """
-    Muse NLP usage: Muse_NLP.py [--version] [--help] [-i | -input <string>]
+    Muse NLP usage: Muse_NLP.py [--version] [--help]
                                 [-t | --top int val] [-f | --file <path>]
                                 [-n | --ngrams int val]
 
@@ -241,14 +249,15 @@ class parse_inputs(object):
         self.top         = 1
         self.input_file  = 'cmudict-0.7b.txt'
         self.n           = 3
-        self.dic_flag    = None
+        self.dic_flag    = 1
         self.split       = None
         self.comment_str =";;;"
         self.input_str   = ''
 
     def parse_options(self, argv):
 
-        self.input_str = argv[0]
+        self.input_str = argv[0].lower()
+        #self.n = temp(self.input_str)
         try:
             opts, args = getopt.getopt(argv[1:],"hvs:t:f:d:n:c:",\
             ["help","version","top=","dfile=","file=","split=","comm=","ngrams="])
@@ -283,8 +292,9 @@ class parse_inputs(object):
 
 
 
-
-
+def temp(input_str):
+    n = input_str.index('?')
+    return n
 
 
 
@@ -301,11 +311,11 @@ def main(argv):
 
     i_parser.parse_options(argv)
 
-    #main_inputs = parse_options(argv)
-
     input_array = corpus_parser(open(i_parser.input_file,'r'),i_parser.comment_str,i_parser.split, i_parser.dic_flag)
 
     count_array = ngrams_counter(input_array,i_parser.n)
+
+    bpoint()
 
     out = query_system(i_parser.input_str,count_array,i_parser.top,i_parser.n)
 
